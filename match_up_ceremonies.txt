@@ -1,0 +1,83 @@
+2
+Adam Britt
+Ethan Shanley
+Ryan Amber
+Wes Kayla
+Dre Jacy
+Dillon Coleysia
+ChrisT Jess
+JJ Simone
+Joey Paige
+Scali Ashleigh
+
+4
+Ryan Kayla
+Adam Shanley
+JJ Jacy
+Ethan Amber
+Scali Simone
+Joey Britt
+ChrisT Paige
+Wes Coleysia
+Dillon Jess
+Dre Ashleigh
+
+2
+Ethan Amber
+Joey Shanley
+Adam Britt
+Dillon Coleysia
+Ryan Kayla
+JJ Jess
+Wes Jacy
+Scali Paige
+Dre Ashleigh
+ChrisT Simone
+
+2
+Adam Amber
+Dre Simone
+JJ Shanley
+Joey Jacy
+Ryan Britt
+Wes Jess
+Dillon Coleysia
+Ethan Kayla
+ChrisT Ashleigh
+Scali Paige
+
+5
+Ethan Amber
+Scali Simone
+Dre Britt
+JJ Jacy
+Wes Kayla
+Ryan Ashleigh
+Joey Jess
+ChrisT Paige
+Dillon Coleysia
+Adam Shanley
+
+5
+ChrisT Paige
+Dillon Coleysia
+Joey Simone
+JJ Jacy
+Scali Britt
+Ethan Amber
+Ryan Jess
+Wes Kayla
+Dre Shanley
+Adam Ashleigh
+
+7
+Wes Kayla
+Scali Jacy
+Ethan Amber
+Joey Jess
+Dre Simone
+Ryan Ashleigh
+Adam Shanley
+JJ Britt
+Dillon Coleysia
+ChrisT Paige
