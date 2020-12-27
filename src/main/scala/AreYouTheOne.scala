@@ -13,83 +13,72 @@ object AreYouTheOne extends App {
       (l.head.toInt, l.tail.map(s => s.split(" ").toList))
     }
 
-  val confirmedMatches = Source.fromFile("confirmed_matches.txt").getLines.toList.map(_.split(" ").toList)
-  val notMatches       = Source.fromFile("not_matches.txt").getLines.toList.map(_.split(" ").toList)
+  val confirmedMatches= Source.fromFile("confirmed_matches.txt").getLines.toList.map(_.split(" ").toList).toSet
+  val notMatches       = Source.fromFile("not_matches.txt").getLines.toList.map(_.split(" ").toList).toSet
 
   val men   = matchUps.flatMap(_._2.map(_.head)).toSet.toList
   val women = matchUps.flatMap(_._2.map(_.last)).toSet.toList
 
   def adjustCouplesAndCounts(
-                              couples: List[List[String]],
+                              couples: Set[List[String]],
                               matchUps: List[(Int, List[List[String]])],
                             ): List[(Int, List[List[String]])] =
-    matchUps.map(il => (il._1 - il._2.intersect(couples).length, il._2.diff(couples)))
+    matchUps.map(il => (il._1 - il._2.intersect(couples.toList).length, il._2.diff(couples.toList)))
 
   def filterMatchUps(
                       matchUps: List[(Int, List[List[String]])],
-                      foundMen: List[String],
-                      foundWomen: List[String],
+                      matches: Set[List[String]],
                       notMatches: Set[List[String]],
                     ): List[(Int, List[List[String]])] =
-    adjustCouplesAndCounts((foundMen zip foundWomen).map(p => List(p._1, p._2)), matchUps).map(ll =>
+    adjustCouplesAndCounts(matches, matchUps).map(ll =>
       (
         ll._1,
         ll._2
           .filter(p =>
             !notMatches.contains(p) &&
-              !foundMen.contains(p.head) && !foundWomen.contains(p.last)
+              !matches.map(_.head).contains(p.head) && !matches.map(_.last).contains(p.last)
           ),
       )
     )
 
   def solve(
              matchUps: List[(Int, List[List[String]])],
-             foundMen: List[String],
-             foundWomen: List[String],
+             matches: Set[List[String]],
              notMatches: Set[List[String]],
              speculate: Boolean = true,
-           ): List[(List[String], List[String], Set[List[String]])] =
+           ): List[(Set[List[String]], Set[List[String]])] =
     matchUps match {
       case Nil if speculate =>
-        val m = men.diff(foundMen).permutations
-        val w = women.diff(foundWomen).permutations
+        val m = men.diff(matches.map(_.head).toList).permutations
+        val w = women.diff(matches.map(_.last).toList).permutations
         val matchList =
           m.flatMap(ml => w.map(wl => ml.zip(wl).filter(p => !notMatches.contains(List(p._1, p._2)))).toList)
             .toList
-            .filter(_.length == men.diff(foundMen).length)
-        matchList.foldLeft(List.empty[(List[String], List[String], Set[List[String]])]) { (acc, l) =>
-          acc ++ List((foundMen ++ l.map(_._1), foundWomen ++ l.map(_._2), notMatches))
+            .filter(_.length == men.diff(matches.map(_.head).toList).length)
+        matchList.foldLeft(List.empty[(Set[List[String]], Set[List[String]])]) { (acc, l) =>
+          acc ++ List((matches ++ l.map(t => List(t._1, t._2)).toSet, notMatches))
         }
-      case Nil if !speculate => List((foundMen, foundWomen, notMatches))
+      case Nil if !speculate => List((matches, notMatches))
       case _ =>
-        filterMatchUps(matchUps, foundMen, foundWomen, notMatches) match {
+        filterMatchUps(matchUps, matches, notMatches) match {
           case h :: tl if h._2.length == h._1 =>
-            solve(tl, foundMen ++ h._2.map(_.head), foundWomen ++ h._2.map(_.last), notMatches, speculate)
+            solve(tl, matches ++ h._2.toSet, notMatches, speculate)
           case h :: _ if h._2.length < h._1 || h._1 < 0 =>
-            List.empty[(List[String], List[String], Set[List[String]])]
+            List.empty[(Set[List[String]], Set[List[String]])]
           case h :: tl if h._1 == 0 =>
-            solve(tl, foundMen, foundWomen, notMatches ++ h._2, speculate)
+            solve(tl, matches, notMatches ++ h._2, speculate)
           case h :: _ =>
             h._2
               .combinations(h._1)
-              .foldLeft(List.empty[(List[String], List[String], Set[List[String]])]) { (l, combo) =>
+              .foldLeft(List.empty[(Set[List[String]], Set[List[String]])]) { (l, combo) =>
                 l ++ solve(
-                  adjustCouplesAndCounts(combo, matchUps).tail,
-                  foundMen ++ combo.map(_.head),
-                  foundWomen ++ combo.map(_.last),
+                  matchUps.tail,
+                  matches ++ combo,
                   notMatches ++ h._2.diff(combo),
                   speculate,
                 )
               }
         }
-    }
-
-  def processAnswer(
-                     lists: List[(List[String], List[String], Set[List[String]])]
-                   ): List[(Set[List[String]], Set[List[String]])] =
-    lists.foldLeft(List.empty[(Set[List[String]], Set[List[String]])]) { (list, listTuple) =>
-      val zipped: Set[List[String]] = (listTuple._1 zip listTuple._2).map(t => List(t._1, t._2)).toSet
-      list ++ List((zipped, listTuple._3))
     }
 
   def printInfo(
@@ -110,15 +99,15 @@ object AreYouTheOne extends App {
       }
     }
 
-  def printConfirmed(matches: List[Set[List[String]]]): Unit =
+  def printConfirmedMatches(matches: List[Set[List[String]]]): Unit =
     matches.reduce(_.intersect(_)).toList.foreach(p => println(s"MATCH: ${p.head} / ${p.last}"))
 
   def printNotMatches(notMatches: List[Set[List[String]]]): Unit =
     notMatches.reduce(_.intersect(_)).foreach(p => println(s"NOT A MATCH: ${p.head} / ${p.last}"))
 
-  val solution = solve(matchUps, confirmedMatches.map(_.head), confirmedMatches.map(_.last), notMatches.toSet, true)
-  val ans: List[(Set[List[String]], Set[List[String]])] = processAnswer(solution)
+  val solution = solve(matchUps, confirmedMatches, notMatches, true)
+  val ans: List[(Set[List[String]], Set[List[String]])] = solution
   printInfo(ans, matchUps)
-  printNotMatches(solution.map(_._3))
-  printConfirmed(ans.map(_._1))
+  printNotMatches(solution.map(_._2))
+  printConfirmedMatches(ans.map(_._1))
 }
